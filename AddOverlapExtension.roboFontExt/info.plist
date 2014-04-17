@@ -15,7 +15,7 @@
 	<key>mainScript</key>
 	<string>AddOverlapTool.py</string>
 	<key>name</key>
-	<string>AddOverlap</string>
+	<string>Add Overlap</string>
 	<key>requiresVersionMajor</key>
 	<string>1</string>
 	<key>requiresVersionMinor</key>
@@ -24,5 +24,9 @@
 	<real>1397549897.291827</real>
 	<key>version</key>
 	<string>1.0</string>
+	<key>repository</key>
+	<string>asaumierdemers/AddOverlapTool</string>
+	<key>extensionPath</key>
+	<string>AddOverlapTool.roboFontExt</string>
 </dict>
 </plist>
