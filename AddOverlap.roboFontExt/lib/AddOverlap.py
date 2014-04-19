@@ -8,6 +8,22 @@ import os
 def getLength((x1, y1), (x2, y2)):
 	return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
+def pointOnACurve(((x1, y1), (cx1, cy1), (cx2, cy2), (x2, y2)), value):
+	dx = x1
+	cx = (cx1 - dx) * 3.0
+	bx = (cx2 - cx1) * 3.0 - cx
+	ax = x2 - dx - cx - bx
+
+	dy = y1
+	cy = (cy1 - dy) * 3.0
+	by = (cy2 - cy1) * 3.0 - cy
+	ay = y2 - dy - cy - by
+
+	mx = ax*(value)**3 + bx*(value)**2 + cx*(value) + dx
+	my = ay*(value)**3 + by*(value)**2 + cy*(value) + dy
+
+	return mx, my
+		
 class AddOverlapPointPen(AbstractPointPen):
 	
 	offset = 30
@@ -22,7 +38,7 @@ class AddOverlapPointPen(AbstractPointPen):
 		self._contours.append([])
 		self.firstSegment = None
 		self.prevOncurve = None
-	        
+	
 	def addPoint(self, (x, y), segmentType=None, smooth=False, name=None, **kwargs):
 		data = dict(point=(x, y), segmentType=segmentType, smooth=smooth, name=name, kwargs=kwargs)
 		self._contours[-1].append(data) 
@@ -35,6 +51,8 @@ class AddOverlapPointPen(AbstractPointPen):
 	
 	def _offset(self, (x1, y1), (x2, y2)):
 		length = getLength((x1, y1), (x2, y2))
+		if length == 0:
+			return 0, 0
 		ox = (x2-x1)/length*self.offset
 		oy = (y2-y1)/length*self.offset
 		return int(round(ox)), int(round(oy))
@@ -49,15 +67,33 @@ class AddOverlapPointPen(AbstractPointPen):
 			for i, pointData in enumerate(pointsData):
 				currentPoint = pointData["point"]
 				addExtraPoint = None
-				if pointData["point"] in self.selectedPoints:
+				if pointData["segmentType"] and pointData["point"] in self.selectedPoints:
 					prevPointData = pointsData[i-1]
 					nextPointData = pointsData[(i+1) % lenPointsData]
 					
 					prevOffsetX, prevOffsetY = self._offset(prevPointData["point"], pointData["point"])
 					nextOffsetX, nextOffsetY = self._offset(pointData["point"], nextPointData["point"])
 					
-					addExtraPoint = pointData["point"][0] - nextOffsetX, pointData["point"][1] - nextOffsetY
+					if (nextOffsetX, nextOffsetY) == (0, 0) and nextPointData["segmentType"] is None:
+						nextSegment = [
+							pointsData[(i+3) % lenPointsData]["point"], 
+							pointsData[(i+2) % lenPointsData]["point"], 
+							nextPointData["point"], 
+							pointData["point"]
+							]
+						newPoint = pointOnACurve(nextSegment, 0.9)
+						nextOffsetX, nextOffsetY = self._offset(pointData["point"], newPoint)
+					addExtraPoint = currentPoint[0] - nextOffsetX, currentPoint[1] - nextOffsetY
 					
+					if (prevOffsetX, prevOffsetY) == (0, 0) and prevPointData["segmentType"] is None:
+						prevSegment = [
+							pointsData[i-3]["point"], 
+							pointsData[i-2]["point"], 
+							prevPointData["point"], 
+							pointData["point"]
+							]
+						newPoint = pointOnACurve(prevSegment, 0.9)
+						prevOffsetX, prevOffsetY = self._offset(newPoint, pointData["point"])
 					currentPoint = currentPoint[0] + prevOffsetX, currentPoint[1] + prevOffsetY
 					
 				outpen.addPoint(currentPoint,
@@ -65,12 +101,13 @@ class AddOverlapPointPen(AbstractPointPen):
 					pointData["smooth"],
 					pointData["name"],
 					**pointData["kwargs"]
-				)
+					)
+					
 				if addExtraPoint:
 					outpen.addPoint(addExtraPoint, "line")
-				
+					
 			outpen.endPath()
-		
+			
 		for baseGlyphName, transformation in self._components:
 			outpen.addComponent(baseGlyphName, transformation)
 
@@ -137,6 +174,5 @@ class AddOverlapTool(object):
 		
 		g.performUndo()
 		g.update()
-
 
 AddOverlapTool()
