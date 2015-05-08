@@ -118,23 +118,18 @@ class AddOverlapTool(object):
 	
 	def __init__(self):
 		
-		addObserver(self, "addOverlapToolbar", "glyphWindowDidOpen")
+		addObserver(self, "addOverlapToolbarItem", "glyphWindowWillShowToolbarItems")
 
-	def addOverlapToolbar(self, info):
-		window = info['window']
+	def addOverlapToolbarItem(self, info):
 		
-		if window is None:
-			return
+		toolbarItems = info['toolbarItems']
 		
 		label = 'Add Overlap'
-		identifier = 'overlapTool'
-		filename = 'toolbarAddOverlap.pdf'
+		identifier = 'addOverlap'
+		filename = 'AddOverlapButton.pdf'
 		callback = self.addOverlap
 		index=-2
 		
-		toolbarItems = window.getToolbarItems()
-		vanillaWindow = window.window()
-		displayMode = vanillaWindow._window.toolbar().displayMode()
 		imagePath = os.path.join(self.base_path, 'resources', filename)
 		image = NSImage.alloc().initByReferencingFile_(imagePath)
 		
@@ -148,10 +143,6 @@ class AddOverlapTool(object):
 		)
 		
 		toolbarItems.insert(index, newItem)
-		vanillaWindow.addToolbar(toolbarIdentifier="toolbar-%s" % identifier, 
-			toolbarItems=toolbarItems, 
-			addStandardItems=False)
-		vanillaWindow._window.toolbar().setDisplayMode_(displayMode)
 	
 	def addOverlap(self, sender):
 		
