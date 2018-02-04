@@ -1,14 +1,21 @@
 from AppKit import NSImage
-from robofab.pens.pointPen import AbstractPointPen
+from ufoLib.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
 from mojo.events import addObserver
 import math
 import os
 
-def getLength((x1, y1), (x2, y2)):
+def getLength(point_1, point_2):
+    x1, y1 = point_1
+    x2, y2 = point_2
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
-def pointOnACurve(((x1, y1), (cx1, cy1), (cx2, cy2), (x2, y2)), value):
+def pointOnACurve(point_1, bcp_1, bcp_2, point_2, value):
+    x1, y1 = point_1
+    cx1, cy1 = bcp_1
+    cx2, cy2 = bcp_2
+    x2, y2 = point_2
+
     dx = x1
     cx = (cx1 - dx) * 3.0
     bx = (cx2 - cx1) * 3.0 - cx
@@ -39,8 +46,13 @@ class AddOverlapPointPen(AbstractPointPen):
         self.firstSegment = None
         self.prevOncurve = None
 
-    def addPoint(self, (x, y), segmentType=None, smooth=False, name=None, **kwargs):
-        data = dict(point=(x, y), segmentType=segmentType, smooth=smooth, name=name, kwargs=kwargs)
+    def addPoint(self, pt, segmentType=None, smooth=False, name=None, **kwargs):
+        data = dict(
+            point=pt,
+            segmentType=segmentType,
+            smooth=smooth,
+            name=name,
+            kwargs=kwargs)
         self._contours[-1].append(data)
 
     def endPath(self):
@@ -49,7 +61,9 @@ class AddOverlapPointPen(AbstractPointPen):
     def addComponent(self, baseGlyphName, transformation):
         pass
 
-    def _offset(self, (x1, y1), (x2, y2)):
+    def _offset(self, point_1, point_2):
+        x1, y1 = point_1
+        x2, y2 = point_2
         length = getLength((x1, y1), (x2, y2))
         if length == 0:
             return 0, 0
@@ -165,5 +179,6 @@ class AddOverlapTool(object):
 
         g.performUndo()
         g.update()
+
 
 AddOverlapTool()
