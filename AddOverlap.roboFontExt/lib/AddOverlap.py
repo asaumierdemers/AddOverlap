@@ -8,7 +8,7 @@ import os
 def getLength(point_1, point_2):
     x1, y1 = point_1
     x2, y2 = point_2
-    return math.sqrt((x2-x1)**2 + (y2-y1)**2)
+    return math.hypot((x2 - x1), (y2 - y1))
 
 def pointOnACurve(point_1, bcp_1, bcp_2, point_2, value):
     x1, y1 = point_1
