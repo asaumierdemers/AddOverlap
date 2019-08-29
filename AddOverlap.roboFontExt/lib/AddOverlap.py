@@ -1,6 +1,6 @@
 from AppKit import NSImage
 try: # RF3
-    from ufoLib.pointPen import AbstractPointPen
+    from fontTools.pens.pointPen import AbstractPointPen
 except: # RF1
     from robofab.pens.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
