@@ -1,7 +1,7 @@
 from AppKit import NSImage
-try:
-    from ufoLib.pointPen import AbstractPointPen
-except:
+try: # RF3
+    from fontTools.pens.pointPen import AbstractPointPen
+except: # RF1
     from robofab.pens.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
 from mojo.events import addObserver
@@ -158,7 +158,12 @@ class AddOverlapTool(object):
 
         selection = []
 
-        for p in g.selection:
+        try: # RF3
+            selectedPoints = g.selectedPoints
+        except: # RF1
+            selectedPoints = g.selection
+
+        for p in selectedPoints:
             p.selected = False
             selection.append((p.x, p.y))
 
@@ -172,6 +177,10 @@ class AddOverlapTool(object):
         pen.drawPoints(g.getPointPen())
 
         g.performUndo()
-        g.update()
+
+        try: # RF3
+            g.changed()
+        except: # RF1
+            g.update()
 
 AddOverlapTool()
