@@ -1,6 +1,6 @@
-from AppKit import NSImage
 from mojo.roboFont import CurrentGlyph
 from mojo.subscriber import Subscriber
+from mojo.extensions import ExtensionBundle
 
 from fontTools.pens.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
@@ -129,15 +129,14 @@ class AddOverlapTool(Subscriber):
 
         label = 'Add Overlap'
         identifier = 'addOverlap'
-        filename = 'AddOverlapButton.pdf'
         callback = self.addOverlap
         index = -2
 
-        imagePath = os.path.join(self.base_path, 'resources', filename)
-        image = NSImage.alloc().initByReferencingFile_(imagePath)
+        bundle = ExtensionBundle("AddOverlap")
+        icon = bundle.getResourceImage("AddOverlapButton")
 
         view = ToolbarGlyphTools((30, 25),
-                                 [dict(image=image, toolTip=label)],
+                                 [dict(image=icon, toolTip=label)],
                                  trackingMode="one")
 
         newItem = dict(itemIdentifier=identifier,
