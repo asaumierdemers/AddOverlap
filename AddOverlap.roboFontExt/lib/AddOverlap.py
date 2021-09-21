@@ -2,11 +2,7 @@ from AppKit import NSImage
 from mojo.roboFont import CurrentGlyph
 from mojo.subscriber import Subscriber
 
-try:   # RF3
-    from fontTools.pens.pointPen import AbstractPointPen
-except ImportError:   # RF1
-    from robofab.pens.pointPen import AbstractPointPen
-
+from fontTools.pens.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
 import math
 import os
@@ -156,11 +152,7 @@ class AddOverlapTool(Subscriber):
         g = CurrentGlyph()
 
         selection = []
-
-        try:   # RF3
-            selectedPoints = g.selectedPoints
-        except AttributeError:   # RF1
-            selectedPoints = g.selection
+        selectedPoints = g.selectedPoints
 
         for p in selectedPoints:
             p.selected = False
@@ -174,11 +166,7 @@ class AddOverlapTool(Subscriber):
         g.clearContours()
         pen.drawPoints(g.getPointPen())
         g.performUndo()
-
-        try:   # RF3
-            g.changed()
-        except AttributeError:   # RF1
-            g.update()
+        g.changed()
 
 
 if __name__ == '__main__':
