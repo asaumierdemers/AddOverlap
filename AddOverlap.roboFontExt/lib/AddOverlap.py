@@ -161,11 +161,10 @@ class AddOverlapTool(Subscriber):
 
         g.drawPoints(pen)
 
-        g.prepareUndo("addOverlap")
-        g.clearContours()
-        pen.drawPoints(g.getPointPen())
-        g.performUndo()
-        g.changed()
+        with g.undo("Add Overlap"):
+            g.clearContours()
+            pen.drawPoints(g.getPointPen())
+            g.changed()
 
 
 if __name__ == '__main__':
