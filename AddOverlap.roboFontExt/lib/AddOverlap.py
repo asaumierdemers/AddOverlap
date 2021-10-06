@@ -5,7 +5,6 @@ from mojo.extensions import ExtensionBundle
 from fontTools.pens.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
 import math
-import os
 
 def getLength(pt1, pt2):
     x1, y1 = pt1
@@ -121,7 +120,6 @@ class AddOverlapPointPen(AbstractPointPen):
 class AddOverlapTool(Subscriber):
 
     debug = True
-    base_path = os.path.dirname(__file__)
 
     def glyphEditorWantsToolbarItems(self, info):
 
