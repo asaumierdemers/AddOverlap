@@ -123,7 +123,7 @@ class AddOverlapTool(Subscriber):
 
     def glyphEditorWantsToolbarItems(self, info):
 
-        toolbarItems = info['lowLevelEvents'][0]['toolbarItems']
+        toolbarItems = info['itemDescriptions']
 
         label = 'Add Overlap'
         identifier = 'addOverlap'
