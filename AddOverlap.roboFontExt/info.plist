@@ -21,12 +21,8 @@
 	<key>requiresVersionMinor</key>
 	<string>0</string>
 	<key>timeStamp</key>
-	<real>1397762029</real>
+	<real>1634911119.056174</real>
 	<key>version</key>
-	<string>1.2.3</string>
-	<key>repository</key>
-	<string>asaumierdemers/AddOverlap</string>
-	<key>extensionPath</key>
-	<string>AddOverlap.roboFontExt</string>
+	<string>1.2.4</string>
 </dict>
 </plist>
