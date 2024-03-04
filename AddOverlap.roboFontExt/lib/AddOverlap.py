@@ -1,12 +1,10 @@
-from AppKit import NSImage
-try: # RF3
-    from fontTools.pens.pointPen import AbstractPointPen
-except: # RF1
-    from robofab.pens.pointPen import AbstractPointPen
+from mojo.roboFont import CurrentGlyph
+from mojo.subscriber import Subscriber
+from mojo.extensions import ExtensionBundle
+
+from fontTools.pens.pointPen import AbstractPointPen
 from lib.UI.toolbarGlyphTools import ToolbarGlyphTools
-from mojo.events import addObserver
 import math
-import os
 
 def getLength(pt1, pt2):
     x1, y1 = pt1
@@ -67,9 +65,11 @@ class AddOverlapPointPen(AbstractPointPen):
 
     def drawPoints(self, outpen):
         for pointsData in self._contours:
+
             if len(pointsData) == 1:
                 # ignore single movetos and anchors
                 continue
+
             outpen.beginPath()
             lenPointsData = len(pointsData)
             for i, pointData in enumerate(pointsData):
@@ -87,8 +87,7 @@ class AddOverlapPointPen(AbstractPointPen):
                             pointsData[(i+3) % lenPointsData]["point"],
                             pointsData[(i+2) % lenPointsData]["point"],
                             nextPointData["point"],
-                            pointData["point"]
-                            ]
+                            pointData["point"]]
                         newPoint = pointOnACurve(nextSegment, 0.9)
                         nextOffsetX, nextOffsetY = self._offset(pointData["point"], newPoint)
                     addExtraPoint = currentPoint[0] - nextOffsetX, currentPoint[1] - nextOffsetY
@@ -98,18 +97,16 @@ class AddOverlapPointPen(AbstractPointPen):
                             pointsData[i-3]["point"],
                             pointsData[i-2]["point"],
                             prevPointData["point"],
-                            pointData["point"]
-                            ]
+                            pointData["point"]]
                         newPoint = pointOnACurve(prevSegment, 0.9)
                         prevOffsetX, prevOffsetY = self._offset(newPoint, pointData["point"])
                     currentPoint = currentPoint[0] + prevOffsetX, currentPoint[1] + prevOffsetY
 
                 outpen.addPoint(currentPoint,
-                    pointData["segmentType"],
-                    pointData["smooth"],
-                    pointData["name"],
-                    **pointData["kwargs"]
-                    )
+                                pointData["segmentType"],
+                                pointData["smooth"],
+                                pointData["name"],
+                                **pointData["kwargs"])
 
                 if addExtraPoint:
                     outpen.addPoint(addExtraPoint, "line")
@@ -120,35 +117,30 @@ class AddOverlapPointPen(AbstractPointPen):
             outpen.addComponent(baseGlyphName, transformation)
 
 
-class AddOverlapTool(object):
+class AddOverlapTool(Subscriber):
 
-    base_path = os.path.dirname(__file__)
+    debug = True
 
-    def __init__(self):
+    def glyphEditorWantsToolbarItems(self, info):
 
-        addObserver(self, "addOverlapToolbarItem", "glyphWindowWillShowToolbarItems")
-
-    def addOverlapToolbarItem(self, info):
-
-        toolbarItems = info['toolbarItems']
+        toolbarItems = info['itemDescriptions']
 
         label = 'Add Overlap'
         identifier = 'addOverlap'
-        filename = 'AddOverlapButton.pdf'
         callback = self.addOverlap
-        index=-2
+        index = -2
 
-        imagePath = os.path.join(self.base_path, 'resources', filename)
-        image = NSImage.alloc().initByReferencingFile_(imagePath)
+        bundle = ExtensionBundle("AddOverlap")
+        icon = bundle.getResourceImage("AddOverlapButton")
 
         view = ToolbarGlyphTools((30, 25),
-            [dict(image=image, toolTip=label)], trackingMode="one")
+                                 [dict(image=icon, toolTip=label)],
+                                 trackingMode="one")
 
         newItem = dict(itemIdentifier=identifier,
-            label = label,
-            callback = callback,
-            view = view
-        )
+                       label = label,
+                       callback = callback,
+                       view = view)
 
         toolbarItems.insert(index, newItem)
 
@@ -157,11 +149,7 @@ class AddOverlapTool(object):
         g = CurrentGlyph()
 
         selection = []
-
-        try: # RF3
-            selectedPoints = g.selectedPoints
-        except: # RF1
-            selectedPoints = g.selection
+        selectedPoints = g.selectedPoints
 
         for p in selectedPoints:
             p.selected = False
@@ -171,16 +159,11 @@ class AddOverlapTool(object):
 
         g.drawPoints(pen)
 
-        g.prepareUndo("addOverlap")
-        g.clearContours()
-
-        pen.drawPoints(g.getPointPen())
-
-        g.performUndo()
-
-        try: # RF3
+        with g.undo("Add Overlap"):
+            g.clearContours()
+            pen.drawPoints(g.getPointPen())
             g.changed()
-        except: # RF1
-            g.update()
 
-AddOverlapTool()
+
+if __name__ == '__main__':
+    AddOverlapTool()
